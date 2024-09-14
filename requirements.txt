@@ -1,0 +1,7 @@
+telethon
+requests
+beautifulsoup4
+lxml
+py7zr
+tgcrypto
+cryptg
