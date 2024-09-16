@@ -428,11 +428,15 @@ emails = {}
 
 @client.on(events.NewMessage(pattern='/setmail (.+)'))
 async def set_mail(event):
-    if event.chat_id not in allowed_chats:
+    sender = await event.get_sender()
+    sender_id = sender.id
+    chat_id = event.chat_id
+
+    if chat_id not in allowed_users:
         return
     email = event.pattern_match.group(1)
-    emails[event.sender_id] = email
-    await event.respond(f'El correo "{email}" ha sido registrado para el usuario {event.sender_id}')
+    emails[sender_id] = email
+    await event.respond(f'El correo "{email}" ha sido registrado para el usuario {sender_id} en el chat {chat_id}')
 
 @client.on(events.NewMessage(pattern='/sendmail'))
 async def send_mail(event):
