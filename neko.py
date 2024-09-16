@@ -424,30 +424,19 @@ async def download_images(event):
 DISMAIL =  os.getenv('DISMAIL')
 DISPASS =  os.getenv('DISPASS')
 
-emails_file = 'emails.json'
-
-# Cargar correos electrónicos desde el archivo JSON
-if os.path.exists(emails_file):
-    with open(emails_file, 'r') as f:
-        emails = json.load(f)
-
-def save_emails():
-    # Guardar los correos en un archivo JSON
-    with open(emails_file, 'w') as f:
-        json.dump(emails, f)
+emails = {}
 
 @client.on(events.NewMessage(pattern='/setmail (.+)'))
 async def set_mail(event):
-    if event.sender_id not in allowed_users:
+    if event.chat_id not in allowed_chats:
         return
     email = event.pattern_match.group(1)
     emails[event.sender_id] = email
-    save_emails()
     await event.respond(f'El correo "{email}" ha sido registrado para el usuario {event.sender_id}')
 
 @client.on(events.NewMessage(pattern='/sendmail'))
 async def send_mail(event):
-    if event.sender_id not in allowed_users:
+    if event.chat_id not in allowed_users:
         return
     if event.sender_id not in emails:
         await event.respond('Use /setmail para establecer su correo')
