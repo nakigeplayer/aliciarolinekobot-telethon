@@ -72,7 +72,7 @@ async def start(event):
     sender = await event.get_sender()
     username = sender.id
 
-    if username not in allowed_users:
+    if event.chat_id not in allowed_users:
         return
     await event.respond('Funcionando')
 
@@ -87,7 +87,7 @@ async def rename(event):
     sender = await event.get_sender()
     username = sender.id
 
-    if username not in allowed_users:
+    if event.chat_id not in allowed_users:
         return
 
     if command_rename:
@@ -184,7 +184,7 @@ async def compress(event):
     sender = await event.get_sender()
     username = sender.id
 
-    if username not in allowed_users:
+    if event.chat_id not in allowed_users:
         return
 
     if compress_in_progress:
