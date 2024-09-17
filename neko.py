@@ -27,6 +27,7 @@ print("El bot se ha iniciado, para detenerlo pulse CTRL+C")
 
 # Define the admin and temporary users
 admin_users = list(map(int, os.getenv('ADMINS').split(',')))
+users = list(map(int, os.getenv('USERS').split(',')))
 temp_users = []
 
 # Combine admin_users and temp_users into allowed_users
