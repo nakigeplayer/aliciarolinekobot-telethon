@@ -31,7 +31,7 @@ users = list(map(int, os.getenv('USERS').split(',')))
 temp_users = []
 
 # Combine admin_users and temp_users into allowed_users
-allowed_users = admin_users + temp_users
+allowed_users = admin_users + users + temp_users
 
 @client.on(events.NewMessage(pattern='/adduser ?(.*)'))
 async def add_user(event):
