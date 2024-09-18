@@ -447,7 +447,7 @@ async def download_images(event):
                 break
 
             soup = BeautifulSoup(response.content, 'html.parser')
-            img_tag = soup.find('img', {'src': re.compile(r'.*\.png$')})
+            img_tag = soup.find('img', {'src': re.compile(r'.*\.(png|jpg|jpeg|gif|bmp|webp)$')})
             if not img_tag:
                 break
 
