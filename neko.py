@@ -407,7 +407,80 @@ async def download_images(event):
     h3_in_use = False
     
 
+@client.on(events.NewMessage(pattern='/nh ?(.*)'))
+async def download_images(event):
+    global h3_in_use
+    if h3_in_use:
+        await event.reply("El comando está en uso actualmente, espere un poco")
+        return
 
+    h3_in_use = True
+    sender = await event.get_sender()
+    username = sender.id
+    codes = event.pattern_match.group(1).split('π')
+
+    if not codes:
+        await event.reply("No puedes enviar el comando vacío")
+        h3_in_use = False
+        return
+
+    total_codes = len(codes)
+    for index, code in enumerate(codes, start=1):
+        code = clean_string(code.strip())
+        url = f"https://nhentai.net/g/{code}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            await event.reply(f"Error al acceder a la página: {str(e)}")
+            h3_in_use = False
+            return
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        page_title = soup.title.string if soup.title else "sin_titulo"
+        folder_name = os.path.join("h3dl", clean_string(re.sub(r'[\\/*?:"<>|]', "", page_title)))
+
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+
+        image_links = []
+        for img in soup.find_all('img'):
+            src = img.get('src')
+            if src and src.endswith('t.jpg'):
+                image_links.append(src.replace('t.jpg', '.jpg'))
+
+        for link in image_links:
+            try:
+                img_data = requests.get(link).content
+                img_name = os.path.join(folder_name, os.path.basename(link))
+                with open(img_name, 'wb') as handler:
+                    handler.write(img_data)
+            except Exception as e:
+                await event.reply(f"Error al descargar el archivo {link}: {str(e)}")
+                h3_in_use = False
+                return
+
+        await event.reply(f"Descargando {code} (Progreso {index}/{total_codes})")
+
+        zip_filename = os.path.join(f"{folder_name}.cbz")
+        with zipfile.ZipFile(zip_filename, 'w') as zipf:
+            for root, _, files in os.walk(folder_name):
+                for file in files:
+                    zipf.write(os.path.join(root, file), arcname=file)
+
+        await client.send_file(event.chat_id, zip_filename)
+        await event.reply(f"Archivo {code} descargado, enviando...")
+
+    await event.reply("Todos los archivos CBZ han sido enviados correctamente")
+    shutil.rmtree('h3dl')
+    os.mkdir('h3dl')
+    h3_in_use = False
+
+    
 
 
 
