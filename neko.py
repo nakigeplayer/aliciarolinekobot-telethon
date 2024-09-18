@@ -505,6 +505,9 @@ def clean_string(s):
 
 
 
+
+
+
 scan_in_use = False
 
 @client.on(events.NewMessage(pattern='/scan (.*)'))
@@ -536,7 +539,10 @@ async def scan(event):
                     results.append(f"{page_name}\n{href}\n")
 
         if results:
-            await event.reply("\n".join(results))
+            with open('results.txt', 'w') as f:
+                f.write("\n".join(results))
+            await event.reply(file='results.txt')
+            os.remove('results.txt')
         else:
             await event.reply("No se encontraron enlaces de páginas web.")
 
@@ -544,6 +550,12 @@ async def scan(event):
         await event.reply(f"Error al escanear la página: {e}")
 
     scan_in_use = False
+    
+
+
+
+
+
 
 
 
