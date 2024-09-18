@@ -81,7 +81,10 @@ async def start(event):
 @client.on(events.NewMessage(pattern='/fv (.+)'))
 async def handler(event):
     link = event.pattern_match.group(1)
-    await event.reply(f'Vista Rápida: Enlace', link_preview=True)
+    buttons = [Button.url("Ver Vista Rápida", link)]
+    await event.respond("Haz clic en el botón para ver la vista rápida del enlace:", buttons=buttons)
+
+
 
 
 command_rename = False
