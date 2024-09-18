@@ -505,9 +505,7 @@ def clean_string(s):
 
 
 
-scan_in_use = False
-
-@client.on(events.NewMessage(pattern='scan (.*)'))
+@client.on(events.NewMessage(pattern='/scan (.*)'))
 async def scan(event):
     global scan_in_use
     if scan_in_use:
@@ -544,7 +542,6 @@ async def scan(event):
         await event.reply(f"Error al escanear la página: {e}")
 
     scan_in_use = False
-
 
 
 
