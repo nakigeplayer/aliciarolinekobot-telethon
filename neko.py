@@ -431,7 +431,7 @@ async def download_images(event):
         code = clean_string(code.strip())
 
         # Check the first page to get the name
-        url = f"https://nnn.net/g/{code}/"
+        url = f"https://nhentai.net/g/{code}/"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
@@ -457,7 +457,7 @@ async def download_images(event):
         images_downloaded = 0
 
         while True:
-            url = f"https://nnn.net/g/{code}/{page_number}/"
+            url = f"https://nhentai.net/g/{code}/{page_number}/"
             try:
                 response = requests.get(url, headers=headers)
                 response.raise_for_status()
