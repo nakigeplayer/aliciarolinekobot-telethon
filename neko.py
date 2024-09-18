@@ -429,15 +429,35 @@ async def download_images(event):
     total_codes = len(codes)
     for index, code in enumerate(codes, start=1):
         code = clean_string(code.strip())
+
+        # Check the first page to get the name
+        url = f"https://nnn.net/g/{code}/"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            await event.reply(f"El código {code} es erróneo: {str(e)}")
+            continue
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        title_tag = soup.find('title')
+        if title_tag:
+            folder_name = os.path.join("h3dl", clean_string(title_tag.text.strip()))
+        else:
+            folder_name = os.path.join("h3dl", clean_string(code))
+
+        os.makedirs(folder_name, exist_ok=True)
+
+        # Now proceed to download images
         page_number = 1
         images_downloaded = 0
 
         while True:
-            url = f"https://nhentai.net/g/{code}/{page_number}/"
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-            }
-
+            url = f"https://nnn.net/g/{code}/{page_number}/"
             try:
                 response = requests.get(url, headers=headers)
                 response.raise_for_status()
@@ -452,12 +472,10 @@ async def download_images(event):
                 break
 
             img_url = img_tag['src']
+            img_extension = os.path.splitext(img_url)[1]
             img_data = requests.get(img_url, headers=headers).content
 
-            folder_name = os.path.join("h3dl", clean_string(code))
-            os.makedirs(folder_name, exist_ok=True)
-            img_filename = os.path.join(folder_name, f"{page_number}.png")
-
+            img_filename = os.path.join(folder_name, f"{page_number}{img_extension}")
             with open(img_filename, 'wb') as img_file:
                 img_file.write(img_data)
 
@@ -481,10 +499,9 @@ async def download_images(event):
     shutil.rmtree('h3dl')
     os.mkdir('h3dl')
     h3_in_use = False
-                
 
-
-
+def clean_string(s):
+    return re.sub(r'\W+', '_', s)
 
 
 
