@@ -505,7 +505,45 @@ def clean_string(s):
 
 
 
+scan_in_use = False
 
+@client.on(events.NewMessage(pattern='scan (.*)'))
+async def scan(event):
+    global scan_in_use
+    if scan_in_use:
+        await event.reply("El comando está en uso actualmente, espere un poco")
+        return
+
+    scan_in_use = True
+    sender = await event.get_sender()
+    url = event.pattern_match.group(1)
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
+
+    try:
+        response = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        links = soup.find_all('a', href=True)
+
+        results = []
+        for link in links:
+            href = link['href']
+            if not href.endswith(('.pdf', '.jpg', '.png', '.doc', '.docx', '.xls', '.xlsx')):
+                page_name = link.get_text(strip=True)
+                if page_name:
+                    results.append(f"{page_name}\n{href}\n")
+
+        if results:
+            await event.reply("\n".join(results))
+        else:
+            await event.reply("No se encontraron enlaces de páginas web.")
+
+    except Exception as e:
+        await event.reply(f"Error al escanear la página: {e}")
+
+    scan_in_use = False
 
 
 
