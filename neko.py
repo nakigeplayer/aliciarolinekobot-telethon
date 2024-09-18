@@ -78,6 +78,11 @@ async def start(event):
     await event.respond('Funcionando')
 
 
+@client.on(events.NewMessage(pattern='/fv (.+)'))
+async def handler(event):
+    link = event.pattern_match.group(1)
+    await event.reply(f'Vista Rápida: Enlace', link_preview=True)
+
 
 command_rename = False
 
