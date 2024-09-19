@@ -625,7 +625,7 @@ async def covernh(event):
         if title_tag:
             page_name = clean_string(title_tag.text.strip())
         else:
-            page_name = clean_string(code)
+            page_name = clean_string(code) + code
 
         # Find the first image
         img_url = f"https://nhentai.net/g/{code}/1/"
@@ -696,7 +696,7 @@ async def covernh(event):
         if title_tag:
             page_name = clean_string(title_tag.text.strip())
         else:
-            page_name = clean_string(code)
+            page_name = clean_string(code) + code
 
         # Find the first image
         img_url = f"https://es.3hentai.net/d/{code}/1/"
@@ -744,13 +744,14 @@ async def resumecodes(event):
     # Obtener el mensaje completo
     message = event.message.message
 
-    # Si el mensaje es una respuesta a un archivo, leer el contenido del archivo
+    # Si el mensaje es una respuesta a un archivo, leer el contenido del archivo línea por línea
     if event.message.is_reply:
         reply_message = await event.message.get_reply_message()
         if reply_message.media:
             file = await client.download_media(reply_message.media)
             with open(file, 'r') as f:
-                message += f.read()
+                for line in f:
+                    message += line
 
     # Buscar todas las combinaciones de 6 números consecutivos
     codes = re.findall(r'\d{6}', message)
@@ -758,8 +759,6 @@ async def resumecodes(event):
     result = ', '.join(codes)
     # Enviar el resultado
     await event.reply(result)
-
-
 
 
 
