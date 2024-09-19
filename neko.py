@@ -679,7 +679,7 @@ async def covernh(event):
         code = clean_string(code.strip())
 
         # Check the first page to get the name
-        url = f"https://es.3hentai.net/g/{code}/"
+        url = f"https://es.3hentai.net/d/{code}/"
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
@@ -727,6 +727,24 @@ async def covernh(event):
 def clean_string(s):
     return re.sub(r'\W+', '_', s)
 
+
+@client.on(events.NewMessage(pattern=r'[/.]?resumecodes (.+)'))
+async def resumecodes(event):
+    sender = await event.get_sender()
+    sender_id = sender.id
+    chat_id = event.chat_id
+
+    # Verificar si el usuario está en la lista de permitidos
+    if sender_id not in allowed_users:
+        return
+
+    message = event.pattern_match.group(1)
+    # Buscar todas las combinaciones de 6 números consecutivos
+    codes = re.findall(r'\d{6}', message)
+    # Unir las combinaciones encontradas con comas
+    result = ', '.join(codes)
+    # Enviar el resultado
+    await event.reply(result)
 
 
 
