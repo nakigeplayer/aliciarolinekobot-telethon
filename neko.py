@@ -79,7 +79,8 @@ async def add_chat(event):
         return
 
     if chat_id not in temp_users:
-        allowed_chats.append(chat_id)
+        temp_users.append(chat_id)
+        temp_users.extend([chat_id])
         await event.reply(f'Chat {chat_id} añadido a temp_users.')
     else:
         await event.reply(f'Chat {chat_id} ya está en temp_users.')
@@ -95,7 +96,8 @@ async def rem_chat(event):
         return
 
     if chat_id in allowed_chats:
-        allowed_chats.remove(chat_id)
+        temp_users.remove(chat_id)
+        temp_users.remove(chat_id)
         await event.reply(f'Chat {chat_id} eliminado de temp_users.')
     else:
         await event.reply(f'Chat {chat_id} no está en temp_users.')
