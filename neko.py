@@ -587,6 +587,146 @@ async def download_images(event):
 def clean_string(s):
     return re.sub(r'\W+', '_', s)
 
+@client.on(events.NewMessage(pattern=r'[/.]?covernh ?(.*)'))
+async def covernh(event):
+    global h3_in_use
+    if h3_in_use:
+        await event.reply("El comando está en uso actualmente, espere un poco")
+        return
+
+    h3_in_use = True
+    sender = await event.get_sender()
+    username = sender.id
+    codes = event.pattern_match.group(1).split('π')
+
+    if not codes:
+        await event.reply("No puedes enviar el comando vacío")
+        h3_in_use = False
+        return
+
+    for code in codes:
+        code = clean_string(code.strip())
+
+        # Check the first page to get the name
+        url = f"https://nhentai.net/g/{code}/"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            await event.reply(f"El código {code} es erróneo: {str(e)}")
+            continue
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        title_tag = soup.find('title')
+        if title_tag:
+            page_name = clean_string(title_tag.text.strip())
+        else:
+            page_name = clean_string(code)
+
+        # Find the first image
+        img_url = f"https://nhentai.net/g/{code}/1/"
+        try:
+            response = requests.get(img_url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            await event.reply(f"Error al acceder a la página de la imagen: {str(e)}")
+            continue
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        img_tag = soup.find('img', {'src': re.compile(r'.*\.(png|jpg|jpeg|gif|bmp|webp)$')})
+        if img_tag:
+            img_url = img_tag['src']
+            img_extension = os.path.splitext(img_url)[1]
+            img_data = requests.get(img_url, headers=headers).content
+
+            img_filename = f"1{img_extension}"
+            with open(img_filename, 'wb') as img_file:
+                img_file.write(img_data)
+
+            await client.send_file(event.chat_id, img_filename, caption=page_name)
+        else:
+            await event.reply(f"No se encontró ninguna imagen para el código {code}")
+
+    h3_in_use = False
+
+def clean_string(s):
+    return re.sub(r'\W+', '_', s)
+
+
+
+@client.on(events.NewMessage(pattern=r'[/.]?cover3h ?(.*)'))
+async def covernh(event):
+    global h3_in_use
+    if h3_in_use:
+        await event.reply("El comando está en uso actualmente, espere un poco")
+        return
+
+    h3_in_use = True
+    sender = await event.get_sender()
+    username = sender.id
+    codes = event.pattern_match.group(1).split('π')
+
+    if not codes:
+        await event.reply("No puedes enviar el comando vacío")
+        h3_in_use = False
+        return
+
+    for code in codes:
+        code = clean_string(code.strip())
+
+        # Check the first page to get the name
+        url = f"https://es.3hentai.net/g/{code}/"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            await event.reply(f"El código {code} es erróneo: {str(e)}")
+            continue
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        title_tag = soup.find('title')
+        if title_tag:
+            page_name = clean_string(title_tag.text.strip())
+        else:
+            page_name = clean_string(code)
+
+        # Find the first image
+        img_url = f"https://es.3hentai.net/g/{code}/1/"
+        try:
+            response = requests.get(img_url, headers=headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            await event.reply(f"Error al acceder a la página de la imagen: {str(e)}")
+            continue
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+        img_tag = soup.find('img', {'src': re.compile(r'.*\.(png|jpg|jpeg|gif|bmp|webp)$')})
+        if img_tag:
+            img_url = img_tag['src']
+            img_extension = os.path.splitext(img_url)[1]
+            img_data = requests.get(img_url, headers=headers).content
+
+            img_filename = f"1{img_extension}"
+            with open(img_filename, 'wb') as img_file:
+                img_file.write(img_data)
+
+            await client.send_file(event.chat_id, img_filename, caption=page_name)
+        else:
+            await event.reply(f"No se encontró ninguna imagen para el código {code}")
+
+    h3_in_use = False
+
+def clean_string(s):
+    return re.sub(r'\W+', '_', s)
+
 
 
 
