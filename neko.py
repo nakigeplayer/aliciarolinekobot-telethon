@@ -100,7 +100,7 @@ async def rem_chat(event):
     else:
         await event.reply(f'Chat {chat_id} no está en temp_users.')
 
-@client.on(events.NewMessage(pattern=r'[/.]?add'))
+@client.on(events.NewMessage(pattern=r'[/.]?addreplied'))
 async def add_user(event):
     sender = await event.get_sender()
     user_id = sender.id
@@ -123,7 +123,7 @@ async def add_user(event):
     else:
         await event.reply(f'User {user_id_to_add} is already in temp_users.')
 
-@client.on(events.NewMessage(pattern=r'[/.]?rem'))
+@client.on(events.NewMessage(pattern=r'[/.]?remreplied'))
 async def rem_user(event):
     sender = await event.get_sender()
     user_id = sender.id
