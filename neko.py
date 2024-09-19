@@ -68,6 +68,40 @@ async def remove_user(event):
         await event.reply(f'User {user_id_to_remove} is not in temp_users.')
 
 
+@client.on(events.NewMessage(pattern=r'[/.]?addchat'))
+async def add_chat(event):
+    sender = await event.get_sender()
+    user_id = sender.id
+    chat_id = event.chat_id
+
+    if user_id not in admin_users:
+        await event.reply('No eres admin')
+        return
+
+    if chat_id not in allowed_chats:
+        allowed_chats.append(chat_id)
+        await event.reply(f'Chat {chat_id} añadido a allowed_chats.')
+    else:
+        await event.reply(f'Chat {chat_id} ya está en allowed_chats.')
+
+@client.on(events.NewMessage(pattern=r'[/.]?remchat'))
+async def rem_chat(event):
+    sender = await event.get_sender()
+    user_id = sender.id
+    chat_id = event.chat_id
+
+    if user_id not in admin_users:
+        await event.reply('No eres admin')
+        return
+
+    if chat_id in allowed_chats:
+        allowed_chats.remove(chat_id)
+        await event.reply(f'Chat {chat_id} eliminado de allowed_chats.')
+    else:
+        await event.reply(f'Chat {chat_id} no está en allowed_chats.')
+
+
+
 @client.on(events.NewMessage(pattern=r'[/.]?start'))
 async def start(event):
     sender = await event.get_sender()
