@@ -29,9 +29,10 @@ print("El bot se ha iniciado, para detenerlo pulse CTRL+C")
 admin_users = list(map(int, os.getenv('ADMINS').split(',')))
 users = list(map(int, os.getenv('USERS').split(',')))
 temp_users = []
+temp_chats = []
 
 # Combine admin_users and temp_users into allowed_users
-allowed_users = admin_users + users + temp_users
+allowed_users = admin_users + users + temp_users + temp_chats
 
 @client.on(events.NewMessage(pattern=r'[/.]?adduser ?(.*)'))
 async def add_user(event):
@@ -78,12 +79,12 @@ async def add_chat(event):
         await event.reply('No eres admin')
         return
 
-    if chat_id not in temp_users:
-        temp_users.append(chat_id)
-        temp_users.extend([chat_id])
-        await event.reply(f'Chat {chat_id} añadido a temp_users.')
+    if chat_id not in temp_chats:
+        temp_chats.append(chat_id)
+        temp_chats.extend([chat_id])
+        await event.reply(f'Chat {chat_id} añadido a temp_chats.')
     else:
-        await event.reply(f'Chat {chat_id} ya está en temp_users.')
+        await event.reply(f'Chat {chat_id} ya está en temp_chats.')
 
 @client.on(events.NewMessage(pattern=r'[/.]?remchat'))
 async def rem_chat(event):
@@ -96,11 +97,10 @@ async def rem_chat(event):
         return
 
     if chat_id in allowed_chats:
-        temp_users.remove(chat_id)
-        temp_users.remove(chat_id)
-        await event.reply(f'Chat {chat_id} eliminado de temp_users.')
+        temp_chats.remove(chat_id)
+        await event.reply(f'Chat {chat_id} eliminado de temp_chats.')
     else:
-        await event.reply(f'Chat {chat_id} no está en temp_users.')
+        await event.reply(f'Chat {chat_id} no está en temp_chats')
 
 @client.on(events.NewMessage(pattern=r'[/.]?addreplied'))
 async def add_user(event):
