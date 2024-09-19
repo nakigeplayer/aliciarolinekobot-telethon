@@ -511,7 +511,6 @@ def clean_string(s):
 
 
 scan_in_use = False
-
 @client.on(events.NewMessage(pattern=r'[/.]?scan (.*)'))
 async def scan(event):
     global scan_in_use
@@ -540,9 +539,20 @@ async def scan(event):
                 if page_name:
                     results.append(f"{page_name}\n{href}\n")
 
-        if results:
+        # Process results to check and modify links
+        final_results = []
+        for result in results:
+            lines = result.split('\n')
+            if len(lines) > 1:
+                href = lines[1]
+                if not href.startswith('http'):
+                    base_url = '/'.join(url.split('/')[:3])
+                    href = f"{base_url}{href}"
+                final_results.append(f"{lines[0]}\n{href}\n")
+
+        if final_results:
             with open('results.txt', 'w') as f:
-                f.write("\n".join(results))
+                f.write("\n".join(final_results))
             await event.reply(file='results.txt')
             os.remove('results.txt')
         else:
@@ -552,7 +562,7 @@ async def scan(event):
         await event.reply(f"Error al escanear la página: {e}")
 
     scan_in_use = False
-    
+
 
 
 
