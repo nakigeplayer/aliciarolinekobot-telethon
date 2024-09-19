@@ -662,11 +662,7 @@ async def set_mail(event):
     await event.respond(f'El correo "{email}" ha sido registrado para el usuario {sender_id} en el chat {chat_id}')
 
 @client.on(events.NewMessage(pattern=r'[/.]?sendmail'))
-async de
-
-
-
-f send_mail(event):
+async def send_mail(event):
     if event.chat_id not in allowed_users:
         return
     if event.sender_id not in emails:
