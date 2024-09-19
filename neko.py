@@ -430,7 +430,7 @@ async def download_images(event):
     h3_in_use = True
     sender = await event.get_sender()
     username = sender.id
-    codes = event.pattern_match.group(1).split('π')
+    codes = event.pattern_match.group(1).split(',')
 
     if not codes:
         await event.reply("No puedes enviar el comando vacío")
@@ -503,7 +503,7 @@ async def download_images(event):
     h3_in_use = True
     sender = await event.get_sender()
     username = sender.id
-    codes = event.pattern_match.group(1).split('π')
+    codes = event.pattern_match.group(1).split(',')
 
     if not codes:
         await event.reply("No puedes enviar el comando vacío")
@@ -597,7 +597,7 @@ async def covernh(event):
     h3_in_use = True
     sender = await event.get_sender()
     username = sender.id
-    codes = event.pattern_match.group(1).split('π')
+    codes = event.pattern_match.group(1).split(',')
 
     if not codes:
         await event.reply("No puedes enviar el comando vacío")
@@ -668,7 +668,7 @@ async def covernh(event):
     h3_in_use = True
     sender = await event.get_sender()
     username = sender.id
-    codes = event.pattern_match.group(1).split('π')
+    codes = event.pattern_match.group(1).split(',')
 
     if not codes:
         await event.reply("No puedes enviar el comando vacío")
@@ -699,7 +699,7 @@ async def covernh(event):
             page_name = clean_string(code)
 
         # Find the first image
-        img_url = f"https://es.3hentai.net/g/{code}/1/"
+        img_url = f"https://es.3hentai.net/d/{code}/1/"
         try:
             response = requests.get(img_url, headers=headers)
             response.raise_for_status()
@@ -728,23 +728,40 @@ def clean_string(s):
     return re.sub(r'\W+', '_', s)
 
 
+
+
+
+
 @client.on(events.NewMessage(pattern=r'[/.]?resumecodes (.+)'))
 async def resumecodes(event):
     sender = await event.get_sender()
     sender_id = sender.id
-    chat_id = event.chat_id
 
     # Verificar si el usuario está en la lista de permitidos
     if sender_id not in allowed_users:
         return
 
-    message = event.pattern_match.group(1)
+    # Obtener el mensaje completo
+    message = event.message.message
+
+    # Si el mensaje es una respuesta a un archivo, leer el contenido del archivo
+    if event.message.is_reply:
+        reply_message = await event.message.get_reply_message()
+        if reply_message.media:
+            file = await client.download_media(reply_message.media)
+            with open(file, 'r') as f:
+                message += f.read()
+
     # Buscar todas las combinaciones de 6 números consecutivos
     codes = re.findall(r'\d{6}', message)
     # Unir las combinaciones encontradas con comas
     result = ', '.join(codes)
     # Enviar el resultado
     await event.reply(result)
+
+
+
+
 
 
 
