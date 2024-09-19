@@ -78,11 +78,11 @@ async def add_chat(event):
         await event.reply('No eres admin')
         return
 
-    if chat_id not in allowed_chats:
+    if chat_id not in temp_users:
         allowed_chats.append(chat_id)
-        await event.reply(f'Chat {chat_id} añadido a allowed_chats.')
+        await event.reply(f'Chat {chat_id} añadido a temp_users.')
     else:
-        await event.reply(f'Chat {chat_id} ya está en allowed_chats.')
+        await event.reply(f'Chat {chat_id} ya está en temp_users.')
 
 @client.on(events.NewMessage(pattern=r'[/.]?remchat'))
 async def rem_chat(event):
@@ -96,9 +96,55 @@ async def rem_chat(event):
 
     if chat_id in allowed_chats:
         allowed_chats.remove(chat_id)
-        await event.reply(f'Chat {chat_id} eliminado de allowed_chats.')
+        await event.reply(f'Chat {chat_id} eliminado de temp_users.')
     else:
-        await event.reply(f'Chat {chat_id} no está en allowed_chats.')
+        await event.reply(f'Chat {chat_id} no está en temp_users.')
+
+@client.on(events.NewMessage(pattern=r'[/.]?add'))
+async def add_user(event):
+    sender = await event.get_sender()
+    user_id = sender.id
+
+    if not event.is_reply:
+        await event.reply('Por favor, responde a un mensaje para usar este comando.')
+        return
+
+    replied_message = await event.get_reply_message()
+    user_id_to_add = replied_message.sender_id
+
+    if user_id not in admin_users:
+        await event.reply('No eres admin')
+        return
+
+    if user_id_to_add not in temp_users:
+        temp_users.append(user_id_to_add)
+        allowed_users.extend([user_id_to_add])
+        await event.reply(f'User {user_id_to_add} added to temp_users.')
+    else:
+        await event.reply(f'User {user_id_to_add} is already in temp_users.')
+
+@client.on(events.NewMessage(pattern=r'[/.]?rem'))
+async def rem_user(event):
+    sender = await event.get_sender()
+    user_id = sender.id
+
+    if not event.is_reply:
+        await event.reply('Por favor, responde a un mensaje para usar este comando.')
+        return
+
+    replied_message = await event.get_reply_message()
+    user_id_to_remove = replied_message.sender_id
+
+    if user_id not in admin_users:
+        await event.reply('No eres admin')
+        return
+
+    if user_id_to_remove in temp_users:
+        temp_users.remove(user_id_to_remove)
+        allowed_users.remove(user_id_to_remove)
+        await event.reply(f'User {user_id_to_remove} removed from temp_users.')
+    else:
+        await event.reply(f'User {user_id_to_remove} is not in temp_users.')
 
 
 
