@@ -45,7 +45,7 @@ async def add_user(event):
 
     if user_id_to_add not in temp_users:
         temp_users.append(user_id_to_add)
-        allowed_users.extend([user_id_to_add])
+        temp_users.extend([user_id_to_add])
         await event.reply(f'User {user_id_to_add} added to temp_users.')
     else:
         await event.reply(f'User {user_id_to_add} is already in temp_users.')
@@ -62,7 +62,7 @@ async def remove_user(event):
 
     if user_id_to_remove in temp_users:
         temp_users.remove(user_id_to_remove)
-        allowed_users.remove(user_id_to_remove)
+        temp_users.remove(user_id_to_remove)
         await event.reply(f'User {user_id_to_remove} removed from temp_users.')
     else:
         await event.reply(f'User {user_id_to_remove} is not in temp_users.')
