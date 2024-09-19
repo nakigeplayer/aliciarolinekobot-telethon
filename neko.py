@@ -33,7 +33,7 @@ temp_users = []
 # Combine admin_users and temp_users into allowed_users
 allowed_users = admin_users + users + temp_users
 
-@client.on(events.NewMessage(pattern='/adduser ?(.*)'))
+@client.on(events.NewMessage(pattern=r'[/.]?adduser ?(.*)'))
 async def add_user(event):
     sender = await event.get_sender()
     user_id = sender.id
@@ -50,7 +50,7 @@ async def add_user(event):
     else:
         await event.reply(f'User {user_id_to_add} is already in temp_users.')
 
-@client.on(events.NewMessage(pattern='/remuser ?(.*)'))
+@client.on(events.NewMessage(pattern=r'[/.]?remuser ?(.*)'))
 async def remove_user(event):
     sender = await event.get_sender()
     user_id = sender.id
@@ -68,7 +68,7 @@ async def remove_user(event):
         await event.reply(f'User {user_id_to_remove} is not in temp_users.')
 
 
-@client.on(events.NewMessage(pattern='/start'))
+@client.on(events.NewMessage(pattern=r'[/.]?start'))
 async def start(event):
     sender = await event.get_sender()
     username = sender.id
@@ -78,18 +78,12 @@ async def start(event):
     await event.respond('Funcionando')
 
 
-@client.on(events.NewMessage(pattern='/fv (.+)'))
-async def handler(event):
-    link = event.pattern_match.group(1)
-    buttons = [Button.url("Ver Vista Rápida", link)]
-    await event.respond("Haz clic en el botón para ver la vista rápida del enlace:", buttons=buttons)
-
 
 
 
 command_rename = False
 
-@client.on(events.NewMessage(pattern='/rename (.+)'))
+@client.on(events.NewMessage(pattern=r'[/.]?rename (.+)'))
 async def rename(event):
     global command_rename
 
@@ -142,7 +136,7 @@ compress_in_progress = False
 
 user_comp = {}
 
-@client.on(events.NewMessage(pattern='/setsize (.+)'))
+@client.on(events.NewMessage(pattern=r'[/.]?setsize (.+)'))
 async def set_comp(event):
     sender = await event.get_sender()
     username = sender.id
@@ -187,7 +181,7 @@ def clear_folder(folder):
 
 
 
-@client.on(events.NewMessage(pattern='/compress'))
+@client.on(events.NewMessage(pattern=r'[/.]?compress'))
 async def compress(event):
     global compress_in_progress
     sender = await event.get_sender()
@@ -298,7 +292,7 @@ def split_file(file_path, part_size):
 
 
 
-@client.on(events.NewMessage(pattern='/up'))
+@client.on(events.NewMessage(pattern=r'[/.]?up'))
 async def upmoodle(event):
 
     sender = await event.get_sender()
@@ -344,7 +338,7 @@ def clean_string(input_string):
     return ''.join(char for char in input_string if char.isalnum() or char in '[]')
 
 
-@client.on(events.NewMessage(pattern='/h3dl ?(.*)'))
+@client.on(events.NewMessage(pattern=r'[/.]?h3dl ?(.*)'))
 async def download_images(event):
     global h3_in_use
     if h3_in_use:
@@ -417,7 +411,7 @@ async def download_images(event):
 
 
     
-@client.on(events.NewMessage(pattern='/nh ?(.*)'))
+@client.on(events.NewMessage(pattern=r'[/.]?nh ?(.*)'))
 async def download_images(event):
     global h3_in_use
     if h3_in_use:
@@ -518,7 +512,7 @@ def clean_string(s):
 
 scan_in_use = False
 
-@client.on(events.NewMessage(pattern='/scan (.*)'))
+@client.on(events.NewMessage(pattern=r'[/.]?scan (.*)'))
 async def scan(event):
     global scan_in_use
     if scan_in_use:
@@ -575,7 +569,7 @@ DISPASS =  os.getenv('DISPASS')
 
 emails = {}
 
-@client.on(events.NewMessage(pattern='/setmail (.+)'))
+@client.on(events.NewMessage(pattern=r'[/.]?setmail (.+)'))
 async def set_mail(event):
     sender = await event.get_sender()
     sender_id = sender.id
@@ -587,7 +581,7 @@ async def set_mail(event):
     emails[sender_id] = email
     await event.respond(f'El correo "{email}" ha sido registrado para el usuario {sender_id} en el chat {chat_id}')
 
-@client.on(events.NewMessage(pattern='/sendmail'))
+@client.on(events.NewMessage(pattern=r'[/.]?sendmail'))
 async def send_mail(event):
     if event.chat_id not in allowed_users:
         return
