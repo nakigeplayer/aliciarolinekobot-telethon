@@ -34,6 +34,27 @@ temp_chats = []
 # Combine admin_users and temp_users into allowed_users
 allowed_users = admin_users + users + temp_users + temp_chats
 
+# Obtener la palabra secreta de la variable de entorno
+CODEWORD = os.getenv("CODEWORD")
+
+@client.on(events.NewMessage(pattern='/access (.+)'))
+async def handler(event):
+    user_id = event.sender_id
+    
+    # Obtener la palabra secreta del mensaje
+    message_codeword = event.pattern_match.group(1)
+    
+    if message_codeword == CODEWORD:
+        # Añadir el ID del usuario a la lista temp_users si no está ya añadido
+        if user_id not in temp_users:
+            temp_users.append(user_id)
+            allowed_users.append(user_id)  # Añadir también a allowed_users
+            await event.reply("Acceso concedido.")
+        else:
+            await event.reply("Ya estás en la lista de acceso temporal.")
+    else:
+        await event.reply("Palabra secreta incorrecta.")
+
 @client.on(events.NewMessage(pattern=r'[/.]?adduser ?(.*)'))
 async def add_user(event):
     sender = await event.get_sender()
@@ -70,27 +91,6 @@ async def remove_user(event):
 from telethon import TelegramClient, events
 import os
 
-CODEWORD = os.getenv("CODEWORD")
-
-@client.on(events.NewMessage(pattern='/access (.+)'))
-async def handler(event):
-    # Obtener la palabra secreta del mensaje
-    message_codeword = event.pattern_match.group(1)
-    
-    if message_codeword == CODEWORD:
-        # Obtener el ID del usuario remitente
-        user_id = event.sender_id
-        
-        # Añadir el ID del usuario a la lista temp_users si no está ya añadido
-        if user_id not in temp_users:
-            temp_users.append(user_id)
-            await event.reply("Acceso concedido.")
-            allowed_users = admin_users + users + temp_users + temp_chats
-        else:
-            await event.reply("Ya estás en la lista de acceso temporal.")
-    else:
-        await event.reply("Palabra secreta incorrecta.")
-        
 
 @client.on(events.NewMessage(pattern=r'[/.]?addchat'))
 async def add_chat(event):
