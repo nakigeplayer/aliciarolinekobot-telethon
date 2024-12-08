@@ -85,6 +85,7 @@ async def handler(event):
         if user_id not in temp_users:
             temp_users.append(user_id)
             await event.reply("Acceso concedido.")
+            allowed_users = admin_users + users + temp_users + temp_chats
         else:
             await event.reply("Ya estás en la lista de acceso temporal.")
     else:
