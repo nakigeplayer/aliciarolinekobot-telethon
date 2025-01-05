@@ -155,7 +155,7 @@ async def upmoodle(event):
                 await event.respond(link)
                 #await event.respond("Enlace:\n\n"+link)
             except Exception as ex:
-                await event.respond(ex)
+                await event.respond(str(ex))
             finally:
                 os.remove(filename)
                 
