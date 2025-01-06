@@ -152,12 +152,10 @@ async def upmoodle(event):
                 filename = await client.download_media(reply_message.media)
                 await event.respond("Subiendo el archivo...")
                 link = upload_token(filename,  os.getenv('NUBETOKEN'), os.getenv('NUBELINK'))
-                await event.respond(link)
-                #await event.respond("Enlace:\n\n"+link)
-            except Exception as ex:
-                await event.respond(str(ex))
-            finally:
+                await event.respond("Enlace:\n\n"+link)
                 os.remove(filename)
+            except Exception as ex:
+                await event.respond(ex)
                 
                   
     
