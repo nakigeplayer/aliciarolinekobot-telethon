@@ -7,6 +7,16 @@ import shutil
 # Suponiendo que user_emails es un diccionario que contiene los correos de los usuarios
 user_emails = {}
 
+async def set_mail(event):
+    user_id = event.sender_id
+    if len(event.message.text.split()) < 2:
+        await event.reply("Por favor, proporciona un correo electrónico.")
+        return
+
+    email = event.message.text.split(' ', 1)[1]
+    user_emails[user_id] = email
+    await event.reply(f"Correo electrónico {email} registrado correctamente.")
+
 async def send_mail(event):
     user_id = event.sender_id
     if user_id not in user_emails:
@@ -46,9 +56,9 @@ async def send_mail(event):
 # Configuración del cliente de Telethon con variables de entorno
 api_id = os.getenv('API_ID')
 api_hash = os.getenv('API_HASH')
-bot_token = os.getenv('TOKEN')
+token = os.getenv('TOKEN')
 
-client = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
+client = TelegramClient('bot', api_id, api_hash).start(bot_token=token)
 
 # Manejo del evento de comando para /sendmail
 @client.on(events.NewMessage(pattern='/sendmail'))
