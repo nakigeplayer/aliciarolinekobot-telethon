@@ -1,165 +1,70 @@
 from telethon import TelegramClient, events
-import requests
-from bs4 import BeautifulSoup
-import re
 import os
-import shutil
-import zipfile
-import py7zr
-import json
 import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.mime.base import MIMEBase 
-from email import encoders
-from moodleclient import upload_token
+from email.message import EmailMessage
+import shutil
 
-# Configura tu API ID y Hash aquí
+# Suponiendo que user_emails es un diccionario que contiene los correos de los usuarios
+user_emails = {}
 
+async def send_mail(event):
+    user_id = event.sender_id
+    if user_id not in user_emails:
+        await event.reply("No has registrado ningún correo, usa /setmail para hacerlo.")
+        return
+    
+    email = user_emails[user_id]
+    msg = EmailMessage()
+    msg['Subject'] = 'Mensaje de Telegram'
+    msg['From'] = os.getenv('DISMAIL')
+    msg['To'] = email
+
+    if event.message.text:
+        msg.set_content(event.message.text)
+    elif event.message.media:
+        media = await event.client.download_media(event.message, file='mailtemp/')
+        if os.path.getsize(media) < 59 * 1024 * 1024:  # 59 MB
+            with open(media, 'rb') as f:
+                msg.add_attachment(f.read(), maintype='application', subtype='octet-stream', filename=os.path.basename(media))
+        else:
+            await event.reply("El archivo supera el límite de lo permitido (59 MB).")
+            return
+    
+    try:
+        with smtplib.SMTP('disroot.org', 587) as server:
+            server.starttls()
+            server.login(os.getenv('DISMAIL'), os.getenv('DISPASS'))
+            server.send_message(msg)
+        await event.reply("Correo electrónico enviado correctamente.")
+        await event.reply("Archivo enviado", reply_to=event.message.id)
+    except Exception as e:
+        await event.reply(f"Error al enviar el correo: {e}")
+    finally:
+        shutil.rmtree('mailtemp')
+        os.mkdir('mailtemp')
+
+# Configuración del cliente de Telethon
 api_id = os.getenv('API_ID')
-api_hash =  os.getenv('API_HASH')
-bot_token =  os.getenv('TOKEN')
+api_hash = os.getenv('API_HASH')
+bot_token = os.getenv('BOT_TOKEN')
 
 client = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
 
-print("El bot se ha iniciado, para detenerlo pulse CTRL+C")
+# Manejo del evento de comando para /sendmail
+@client.on(events.NewMessage(pattern='/sendmail'))
+async def send_mail_handler(event):
+    await send_mail(event)
 
+# Manejo del evento de comando para /setmail
+@client.on(events.NewMessage(pattern='/setmail'))
+async def set_mail_handler(event):
+    await set_mail(event)
 
-# Define the admin and temporary users
-admin_users = list(map(int, os.getenv('ADMINS').split(',')))
-users = list(map(int, os.getenv('USERS').split(',')))
-temp_users = []
-temp_chats = []
+# Manejo de cualquier mensaje recibido
+@client.on(events.NewMessage)
+async def handle_all_messages(event):
+    if event.message.media:
+        await send_mail(event)
 
-# Combine admin_users and temp_users into allowed_users
-allowed_users = admin_users + users + temp_users + temp_chats
-
-# Obtener la palabra secreta de la variable de entorno
-CODEWORD = os.getenv("CODEWORD")
-
-@client.on(events.NewMessage(pattern='/access (.+)'))
-async def handler(event):
-    user_id = event.sender_id
-    
-    # Obtener la palabra secreta del mensaje
-    message_codeword = event.pattern_match.group(1)
-    
-    if message_codeword == CODEWORD:
-        # Añadir el ID del usuario a la lista temp_users si no está ya añadido
-        if user_id not in temp_users:
-            temp_users.append(user_id)
-            allowed_users.append(user_id)  # Añadir también a allowed_users
-            await event.reply("Acceso concedido.")
-        else:
-            await event.reply("Ya estás en la lista de acceso temporal.")
-    else:
-        await event.reply("Palabra secreta incorrecta.")
-
-@client.on(events.NewMessage(pattern=r'[/.]?adduser ?(.*)'))
-async def add_user(event):
-    sender = await event.get_sender()
-    user_id = sender.id
-
-    user_id_to_add = int(event.pattern_match.group(1))
-    if user_id not in admin_users:
-        await event.reply('No eres admin')
-        return
-
-    if user_id_to_add not in temp_users:
-        temp_users.append(user_id_to_add)
-        temp_users.extend([user_id_to_add])
-        await event.reply(f'User {user_id_to_add} added to temp_users.')
-    else:
-        await event.reply(f'User {user_id_to_add} is already in temp_users.')
-
-@client.on(events.NewMessage(pattern=r'[/.]?remuser ?(.*)'))
-async def remove_user(event):
-    sender = await event.get_sender()
-    user_id = sender.id
-
-    user_id_to_remove = int(event.pattern_match.group(1))
-    if user_id not in admin_users:
-        await event.reply('No eres admin')
-        return
-
-    if user_id_to_remove in temp_users:
-        temp_users.remove(user_id_to_remove)
-        temp_users.remove(user_id_to_remove)
-        await event.reply(f'User {user_id_to_remove} removed from temp_users.')
-    else:
-        await event.reply(f'User {user_id_to_remove} is not in temp_users.')
-from telethon import TelegramClient, events
-import os
-
-
-@client.on(events.NewMessage(pattern=r'[/.]?addchat'))
-async def add_chat(event):
-    sender = await event.get_sender()
-    user_id = sender.id
-    chat_id = event.chat_id
-
-    if user_id not in admin_users:
-        await event.reply('No eres admin')
-        return
-
-    if chat_id not in temp_chats:
-        temp_chats.append(chat_id)
-        temp_chats.extend([chat_id])
-        await event.reply(f'Chat {chat_id} añadido a temp_chats.')
-    else:
-        await event.reply(f'Chat {chat_id} ya está en temp_chats.')
-
-@client.on(events.NewMessage(pattern=r'[/.]?remchat'))
-async def rem_chat(event):
-    sender = await event.get_sender()
-    user_id = sender.id
-    chat_id = event.chat_id
-
-    if user_id not in admin_users:
-        await event.reply('No eres admin')
-        return
-
-    if chat_id in allowed_chats:
-        temp_chats.remove(chat_id)
-        await event.reply(f'Chat {chat_id} eliminado de temp_chats.')
-    else:
-        await event.reply(f'Chat {chat_id} no está en temp_chats')
-
-
-
-
-@client.on(events.NewMessage(pattern=r'[/.]?start'))
-async def start(event):
-    sender = await event.get_sender()
-    username = sender.id
-
-    if event.chat_id not in allowed_users:
-        return
-    await event.respond('Funcionando')
-
-@client.on(events.NewMessage(pattern=r'[/.]?up'))
-async def upmoodle(event):
-
-    sender = await event.get_sender()
-    username = sender.id
-    if username not in allowed_users:
-        return
-    if event.is_reply:
-        reply_message = await event.get_reply_message()
-        if reply_message.media:
-            try:
-                await event.respond("Descargando el archivo para subir a moodle...")
-                filename = await client.download_media(reply_message.media)
-                await event.respond("Subiendo el archivo...")
-                link = upload_token(filename,  os.getenv('NUBETOKEN'), os.getenv('NUBELINK'))
-                await event.respond("Enlace:\n\n"+link)
-                os.remove(filename)
-            except Exception as ex:
-                await event.respond(ex)
-                
-                  
-    
 client.start()
 client.run_until_disconnected()
-
-
