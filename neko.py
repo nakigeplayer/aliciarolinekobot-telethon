@@ -43,10 +43,10 @@ async def send_mail(event):
         shutil.rmtree('mailtemp')
         os.mkdir('mailtemp')
 
-# Configuración del cliente de Telethon
+# Configuración del cliente de Telethon con variables de entorno
 api_id = os.getenv('API_ID')
 api_hash = os.getenv('API_HASH')
-bot_token = os.getenv('BOT_TOKEN')
+bot_token = os.getenv('TOKEN')
 
 client = TelegramClient('bot', api_id, api_hash).start(bot_token=bot_token)
 
